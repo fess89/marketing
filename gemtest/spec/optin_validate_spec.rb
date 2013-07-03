@@ -1,6 +1,6 @@
 require 'marketing'
 
-describe Marketing, "#validating_optin" do
+describe Marketing, "#gem_validating_optin" do
 
 	marketing = Marketing.new
 	params = Hash.new

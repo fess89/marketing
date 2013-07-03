@@ -40,13 +40,11 @@ describe Marketing, "#optin_crud" do
 
 	it "can be deactivated from JSON if exists" do
 		#finding max id
-		p "Deactivating if exists"
 		max_id = (marketing.db.execute "select id from optins order by id desc limit 1").flatten[0]
 		expect (JSON.parse(marketing.deactivate_optin({:id => max_id}.to_json)))["code"].should eq(200)
 	end
 
 	it "cannot be deactivated from JSON if it does not exist" do
-		p "Deactivating if does not exist"
 		#this probably does not exist
 		id = (marketing.db.execute "select id from optins order by id desc limit 1").flatten[0] + 38000
 		expect (JSON.parse(marketing.deactivate_optin({:id => id}.to_json)))["code"].should_not eq(200)
