@@ -1,6 +1,6 @@
-require 'marketing'
+require "#{Dir.pwd}/lib/marketing.rb"
 
-describe Marketing, "#validating_optin" do
+describe Marketing, "#optin_validation" do
 
 	marketing = Marketing.new
 	params = Hash.new
@@ -13,44 +13,52 @@ describe Marketing, "#validating_optin" do
 	    params[:last_name] = "Chyrkov"
 	    params[:permission_type] = "one-time"
 	    params[:channel] = "sms"
-	   	optin = Marketing::Optin.new(params)
+        puts
 	end
 
-	it "is created" do
+	it "is created with class Optin" do
+        optin = Marketing::Optin.new(params)
     	optin.class.should eq(Marketing::Optin)
   	end
 
   	it "validates with good params" do
-       	optin.validate(params).should eq(true)
+        optin = Marketing::Optin.new(params)
+       	optin.valid?.should eq(true)
     end
 
     it "fails to validate without email" do
     	params[:email] = ""
-    	optin.validate(params).should eq(false)
+        optin = Marketing::Optin.new(params)
+    	optin.valid?.should eq(false)
     end
 
     it "fails to validate without company_name" do
     	params[:company_name] = ""
-    	optin.validate(params).should eq(false)
+        optin = Marketing::Optin.new(params)
+    	optin.valid?.should eq(false)
     end
 
     it "fails to validate without first name" do
     	params[:first_name] = ""
-    	optin.validate(params).should eq(false)
+        optin = Marketing::Optin.new(params)
+    	optin.valid?.should eq(false)
     end
 
     it "fails to validate without last name" do
     	params[:last_name] = ""
-    	optin.validate(params).should eq(false)
+        optin = Marketing::Optin.new(params)
+    	optin.valid?.should eq(false)
     end
 
     it "fails to validate with wrong permission_type" do
     	params[:permission_type] = "ololo"
-    	optin.validate(params).should eq(false)
+        optin = Marketing::Optin.new(params)
+    	optin.valid?.should eq(false)
     end
 
     it "fails to validate with wrong channel type" do
     	params[:channel] = "ololo"
-    	optin.validate(params).should eq (false)
+        optin = Marketing::Optin.new(params)
+    	optin.valid?.should eq(false)
     end
 end

@@ -1,14 +1,6 @@
-#gem installation
-task :build do 
-	#getting gem info
-	gemspec = eval(File.read("marketing.gemspec"))
-	system "gem build marketing.gemspec"
-	system "gem install marketing-#{gemspec.version.to_s}.gem --no-ri --no-rdoc"
-end
-
 #database creation
 task :db_create do
-	require 'marketing'
+	require "./lib/marketing.rb"
 	db = Marketing::SqliteConnector.new
 	db.create_db
 end
