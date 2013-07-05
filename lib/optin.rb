@@ -1,37 +1,43 @@
 class Marketing::Optin
 
-	#attr_accessor is redefined for the class to know all its attributes
+	# Redefines attr_accessor for the class
+	# so that an object would know all its attr_accessor attributes
 	def self.attr_accessor(*vars)
 	   @attributes ||= []
 	   @attributes.concat vars
 	   super(*vars)
 	end
 
-	#getting everything which is attr_accessor
+	# Returns an array of attribute names for attributes defined as attr_accessor
 	def self.attributes
 	    @attributes
   	end
 
+  	# Returns an array of valid channel types (could use @@channel_types instead)
   	def self.channel_types
     	['sms', 'email', 'sms+email']
   	end
 
+	# Returns an array of valid permission types (could use @@permission_types instead)
   	def self.permission_types
     	['one-time', 'permanent']
   	end
 
 	attr_accessor :id, :email, :mobile, :first_name, :last_name, :permission_type, :channel, :company_name
 
+	# Creates a new Optin
+	# Params:
+	# +params:: hash which has attribute names as keys and their intended values as values
 	def initialize(params)
 		self.class.attributes.each do |key|
 			instance_variable_set("@#{key.to_sym}", params[key])
 		end
 	end
 
-	#primitive validation, Active Record would do better
+	# Checks that an optin is valid (could be saved to database)
+	# Intended to be executed before save, just like in ActiveRecord
 	def valid?
 		res = true
-		#TODO: validate email
 		res = (!@email.empty?) && res
 		res = (!@mobile.empty?) && res
 		res = (!@first_name.empty?) && res
@@ -41,9 +47,13 @@ class Marketing::Optin
 		res = self.class.channel_types.include?(@channel) && res
 	end
 
-	#saving optin to db
+	# Saves an optin to database if it is valid
+	# Params:
+	# +db:: an SQLite3::Database object which is assumed to be open
+	# TODO: put the SQLite code into the SqliteConnector object and make it a bit more dynamic 
+	# At the very least, the method checks is db is really an SQLite3::Database object
 	def save(db)
-		if self.valid?
+		if (self.valid? && db.is_a?(SQLite3::Database))
 			db.execute2 "insert into optins values(null, '#{email}', '#{mobile}', '#{first_name}',
 													'#{last_name}', '#{permission_type}', 
 													'#{channel}', '#{company_name}');"
@@ -53,27 +63,60 @@ class Marketing::Optin
 		end
 	end
 
-	#deleting optin
+	# Deletes an optin from database
+	# Params:
+	# +db:: an SQLite3::Database object which is assumed to be open
+	# At the very least, the method checks is db is really an SQLite3::Database object
+	# Returns the number of rows changed in the DB or nil if nothing was changed or the DB is invalid
 	def deactivate(db)
-		db.execute "delete from optins where id=#{self.id}"
-		return db.changes > 0 ? true : nil
-	end
-
-	#updating optin with new data
-	def update(db, params)
-		set = ""
-		params.each do |key, value|
-			if (self.class.attributes.include?(key.to_sym) && (key != :id))
-				set += "#{key}='#{value}', "
-			end
+		if db.is_a?(SQLite3::Database)
+			db.execute "delete from optins where id=#{self.id}"
+			return db.changes > 0 ? true : nil
+		else
+			return nil
 		end
-		set = set[0..-3]
-		db.execute2 "update optins set #{set} where id=#{id}; "
-		return db.changes > 0 ? true : nil
 	end
 
-	#returns number of rows where column "key" is equal to "value"
+	# Updates an optin with new data
+	# Params:
+	# +db:: an SQLite3::Database object which is assumed to be open
+	# +params:: a hash which may hold all of some of the optin attributes and other key-value pairs
+	# Example: { :first_name => "Bill", :last_name => "Gates", :company_name => "Microsoft" }
+	# At the very least, the method checks is db is really an SQLite3::Database object
+	# and that the hash is not empty
+	# Returns the number of rows changed in the DB or nil if nothing was changed or the DB is invalid
+	def update(db, params)
+		if params.empty?
+			return nil
+		end
+		if db.is_a?(SQLite3::Database)
+			set = ""
+			params.each do |key, value|
+				if (self.class.attributes.include?(key.to_sym) && (key != :id))
+					set += "#{key}='#{value}', "
+				end
+			end
+			set = set[0..-3]
+			db.execute2 "update optins set #{set} where id=#{id}; "
+			return db.changes > 0 ? true : nil
+		else
+			return nil
+		end
+	end
+
+	# Tries to find an Optin in a database according to parameters
+	# Params:
+	# +db:: an SQLite3::Database object which is assumed to be open
+	# +params:: a hash which may hold all of some of the optin attributes and other key-value pairs
+	# At the very least, the method checks is db is really an SQLite3::Database object
+	# and that the hash is not empty
+	# Returns the most recent Optin found (in case more than one fits), 
+	# nil if nothing is found, nil if DB is invalid, nil if params are empty
+	# TODO: escape sql symbols
 	def self.find_by_params(db, params)
+		if params.empty?
+			return nil
+		end
 		where = ""
 		params.each do |key, value|
 			if @attributes.include?(key.to_sym)
@@ -81,21 +124,20 @@ class Marketing::Optin
 			end
 		end
 		where = where[0..-6]
-		#TODO: escape sql symbols
 		res = db.execute "select * from optins where #{where} order by id desc limit 1"
 		if res.empty?
 			return nil
-		else
-			params = Hash.new
-			res = res.flatten
-			attributes.each do |key|
-				params[key] = res.shift
-			end
-			return self.new(params)
 		end
+		params = Hash.new
+		res = res.flatten
+		attributes.each do |key|
+			params[key] = res.shift
+		end
+		return self.new(params)
 	end
 
-	#converts optin to JSON hash
+	# Converts optin to JSON
+	# Returns a JSON string
 	def to_json
 		json_hash = Hash.new
 		self.class.attributes.each do |key|

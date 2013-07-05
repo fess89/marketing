@@ -2,12 +2,17 @@ require "sqlite3"
 
 class Marketing::SqliteConnector < SQLite3::Database
 
-	#get the interface
+	# Opens a database 
+  # Params:
+  # +db_name:: optional name of database file (will be created if it does not exist)
 	def initialize(db_name = "optins.db")
 		super(db_name)
 	end
 
-	#TODO: load SQL schema from file
+	# Creates a database suitable for storing optins
+  # Params:
+  # +db_name:: optional name of database file (will be created if it does not exist)
+  # TODO: load DB schema from file
 	def create_db(db_name = "optins.db")
 		self.execute <<-SQL
   			create table optins (
@@ -22,4 +27,5 @@ class Marketing::SqliteConnector < SQLite3::Database
   			);
 		SQL
 	end
+
 end
