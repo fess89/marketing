@@ -1,6 +1,4 @@
 class Marketing::Optin
-	@@CHANNEL_TYPES = ['sms', 'email', 'sms+email']
-	@@PERMISSION_TYPES = ['one-time', 'permanent']
 
 	#attr_accessor is redefined for the class to know all its attributes
 	def self.attr_accessor(*vars)
@@ -12,6 +10,14 @@ class Marketing::Optin
 	#getting everything which is attr_accessor
 	def self.attributes
 	    @attributes
+  	end
+
+  	def self.channel_types
+    	['sms', 'email', 'sms+email']
+  	end
+
+  	def self.permission_types
+    	['one-time', 'permanent']
   	end
 
 	attr_accessor :id, :email, :mobile, :first_name, :last_name, :permission_type, :channel, :company_name
@@ -31,8 +37,8 @@ class Marketing::Optin
 		res = (!@first_name.empty?) && res
 		res = (!@last_name.empty?) && res
 		res = (!@company_name.empty?) && res
-		res = @@PERMISSION_TYPES.include?(@permission_type) && res
-		res = @@CHANNEL_TYPES.include?(@channel) && res
+		res = self.class.permission_types.include?(@permission_type) && res
+		res = self.class.channel_types.include?(@channel) && res
 	end
 
 	#saving optin to db

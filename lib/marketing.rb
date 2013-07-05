@@ -7,14 +7,8 @@ class Marketing
 	end
 
 	def show_optin(json_data)
-		if (!json_data.valid_json?)
-			return JsonReply.failure("Bad request", 401)
-		end
-		json_hash = JSON.parse(json_data)
-		params = Hash.new
-		json_hash.each do |key, value|
-			params[key.to_sym] = value
-		end
+		json_data.validate_json_with_failure
+		params = json_data.json_to_symbol_hash
 		optin = Optin.find_by_params(@db, { :id => params[:id] })
 		if (optin)
 			return JsonReply.success("Found optin",
@@ -25,24 +19,16 @@ class Marketing
 	end
 
 	def new_optin(json_data)
-		if (!json_data.valid_json?)
-			return JsonReply.failure("Bad request", 401)
-		end
-		json_hash = JSON.parse(json_data)
-		params = Hash.new
-		json_hash.each do |key, value|
-			params[key.to_sym] = value
-		end
-		optin = Optin.new(params)
+		json_data.validate_json_with_failure
+		params = json_data.json_to_symbol_hash
 
 		#find the optin with given params
-		res = Optin.find_by_params(@db, { :company_name => optin.company_name, 
-								     	  :channel => optin.channel} )	
-		if (res != nil)
+		if (!Optin.find_by_params(@db, {:company_name=>params[:company_name],:channel=>params[:channel]}).nil?)	
 			#this means duplicate
-			return JsonReply.failure("Company #{optin.company_name} already has an optin for channel type #{optin.channel}", 
+			return JsonReply.failure("Company #{params[:company_name]} already has an optin for channel type #{params[:channel]}", 
 									 302)
 		else
+			optin = Optin.new(params)
 			if optin.save(@db)
 				return JsonReply.success("Optin created", nil)
 			else
@@ -52,14 +38,9 @@ class Marketing
 	end
 
 	def update_optin(json_data)
-		if (!json_data.valid_json?)
-			return JsonReply.failure("Bad request", 401)
-		end
-		json = JSON.parse(json_data)
-		params = Hash.new
-		json.each do |key, value|
-			params[key.to_sym] = value
-		end
+		json_data.validate_json_with_failure
+		params = json_data.json_to_symbol_hash
+
 		#check if there is an optin with the given id
 		optin = Optin.find_by_params(@db, { :id => params[:id] })
 		if (optin)
@@ -74,15 +55,13 @@ class Marketing
 	end
 
 	def deactivate_optin(json_data)
-		if (!json_data.valid_json?)
-			return JsonReply.failure("Bad request", 401)
-		end
+		json_data.validate_json_with_failure
 		params = JSON.parse(json_data)
 		id = params["id"]
+
 		#check if there is such an optin
 		optin = Optin.find_by_params(@db, { :id => id })
-		if (optin)
-			#success
+		if (!optin.nil?)
 			if optin.deactivate(@db)
 				return JsonReply.success("Optin with id #{id} deactivated", nil)
 			else
@@ -91,12 +70,11 @@ class Marketing
 		else
 			return JsonReply.failure("Optin with id #{id} not found", 404)
 		end
-	else
-end
-
+	end
 end
 
 path = File.dirname(__FILE__)
 require "#{path}/json_reply.rb"
 require "#{path}/sqlite_connector.rb"
 require "#{path}/optin.rb"
+require "#{path}/json_helper.rb"
