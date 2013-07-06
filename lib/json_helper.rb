@@ -1,5 +1,4 @@
 require 'json'
-require 'json_reply'
 
 class String
 
