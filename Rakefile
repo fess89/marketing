@@ -21,6 +21,7 @@ task :db_seed do
 		params[:channel] = "sms"
 		marketing.new_optin(params.to_json)
 	end
+	puts "Added 10 random entries to DB"
 end
 
 

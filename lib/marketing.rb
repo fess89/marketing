@@ -38,9 +38,9 @@ class Marketing
 	# * 401 Bad Request if optin is not saved for some reason or JSON is invalid
 	def new_optin(json_data)
 		json_data.validate_json_with_failure
-		params = json_data.json_to_symbol_hash
+		params = JSON.parse(json_data)
 
-		if (!Optin.find_by_params(@db, {:company_name=>params[:company_name],:channel=>params[:channel]}).nil?)	
+		if (!Optin.find_by_params(@db, {:company_name=>params["company_name"],:channel=>params["channel"]}).nil?)	
 			#this means duplicate
 			return 302
 		else
@@ -66,11 +66,18 @@ class Marketing
 	# * 503 Internal Server Error if update does not succeed
 	def update_optin(json_data)
 		json_data.validate_json_with_failure
-		params = json_data.json_to_symbol_hash
+		params = JSON.parse(json_data)
 
 		#check if there is an optin with the given id
-		optin = Optin.find_by_params(@db, { :id => params[:id] })
+		optin = Optin.find_by_params(@db, { :id => params["id"] })
 		if (optin)
+			#checking if there is another optin with the required company name and channel
+			dup = Optin.find_by_params(@db, { :company_name => params["company_name"], :channel => params["channel"] })
+			if (dup)
+				if (dup.id != params["id"].to_i)
+					return 302
+				end
+			end
 			if optin.update(@db, params)
 				return 200
 			else

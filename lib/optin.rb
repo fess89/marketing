@@ -29,8 +29,9 @@ class Marketing::Optin
 	# Params:
 	# +params:: hash which has attribute names as keys and their intended values as values
 	def initialize(params)
+		hash = Hash[params.map{|(k,v)| [k.to_sym,v]}]
 		self.class.attributes.each do |key|
-			instance_variable_set("@#{key.to_sym}", params[key])
+			instance_variable_set("@#{key.to_sym}", hash[key])
 		end
 	end
 
