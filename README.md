@@ -9,6 +9,7 @@ Installation
     mkdir marketing  
     cd marketing
     git clone https://github.com/fess89/marketing .
+    git checkout sinatra
     bundle install
     sudo apt-get install sqlite3
     rake db_create
