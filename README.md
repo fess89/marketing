@@ -3,6 +3,15 @@ marketing
 
 Marketing Opt-ins service. Solution of a test task given by Alexander Simonov.
 
+Running
+-------
+
+    rackup -p 4567 -D
+    
+or
+
+    ruby marketing_sinatra.rb
+
 Testing
 -------
     mkdir marketing  
