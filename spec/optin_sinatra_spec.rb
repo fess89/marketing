@@ -1,7 +1,7 @@
 require "#{Dir.pwd}/lib/marketing.rb"
 require 'spec_helper'
 
-describe Marketing, "#optin_crud" do
+describe Marketing, "#sinatra_optin_crud" do
 
 	marketing = Marketing.new
 	params = Hash.new

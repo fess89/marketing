@@ -37,14 +37,19 @@ class Marketing::Optin
 	# Checks that an optin is valid (could be saved to database)
 	# Intended to be executed before save, just like in ActiveRecord
 	def valid?
-		res = true
-		res = (!@email.empty?) && res
-		res = (!@mobile.empty?) && res
-		res = (!@first_name.empty?) && res
-		res = (!@last_name.empty?) && res
-		res = (!@company_name.empty?) && res
-		res = self.class.permission_types.include?(@permission_type) && res
-		res = self.class.channel_types.include?(@channel) && res
+		if @email.nil? || @mobile.nil? || @first_name.nil? || @last_name.nil? || @company_name.nil? || @permission_type.nil? || @channel.nil?
+			return false
+		end
+		if @email.empty? || @mobile.empty? || @first_name.empty? || @last_name.empty? || @company_name.empty? || @permission_type.empty? || @channel.empty?
+			return false
+		end
+		if !self.class.permission_types.include?(@permission_type) 
+			return false
+		end
+		if !self.class.channel_types.include?(@channel) 
+			return false
+		end
+		return true
 	end
 
 	# Saves an optin to database if it is valid
